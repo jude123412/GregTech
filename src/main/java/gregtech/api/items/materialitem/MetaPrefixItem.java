@@ -1,5 +1,8 @@
 package gregtech.api.items.materialitem;
 
+import codechicken.lib.model.ModelRegistryHelper;
+import codechicken.lib.util.TransformUtils;
+
 import gregtech.api.GTValues;
 import gregtech.api.damagesources.DamageSources;
 import gregtech.api.items.armor.ArmorMetaItem;
@@ -14,10 +17,16 @@ import gregtech.api.unification.material.properties.ToolProperty;
 import gregtech.api.unification.material.registry.MaterialRegistry;
 import gregtech.api.unification.ore.OrePrefix;
 import gregtech.api.unification.stack.UnificationEntry;
+import gregtech.client.renderer.item.CosmicItemRenderer;
 import gregtech.common.creativetab.GTCreativeTabs;
+
+import morph.avaritia.api.ICosmicRenderItem;
+import morph.avaritia.api.IHaloRenderItem;
+import morph.avaritia.api.registration.IModelRegister;
 
 import net.minecraft.block.BlockCauldron;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelBakery;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.util.ITooltipFlag;
@@ -41,7 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class MetaPrefixItem extends StandardMetaItem {
+public class MetaPrefixItem extends StandardMetaItem implements IHaloRenderItem, ICosmicRenderItem, IModelRegister {
 
     private final MaterialRegistry registry;
     private final OrePrefix prefix;
@@ -127,6 +136,9 @@ public class MetaPrefixItem extends StandardMetaItem {
                         .getItemModelPath(materialIconSet);
                 ModelBakery.registerItemVariants(this, resourceLocation);
                 alreadyRegistered.put(registrationKey, new ModelResourceLocation(resourceLocation, "inventory"));
+                ModelResourceLocation location = new ModelResourceLocation(resourceLocation, "inventory");
+                IBakedModel wrapped = new CosmicItemRenderer(TransformUtils.DEFAULT_ITEM, (modelRegistry) -> modelRegistry.getObject(location));
+                ModelRegistryHelper.register(location, wrapped);
             }
             ModelResourceLocation resourceLocation = alreadyRegistered.get(registrationKey);
             metaItemsModels.put(metaItem, resourceLocation);
@@ -138,6 +150,9 @@ public class MetaPrefixItem extends StandardMetaItem {
             ResourceLocation defaultLocation = Objects.requireNonNull(OrePrefix.ingot.materialIconType)
                     .getItemModelPath(defaultIcon);
             ModelBakery.registerItemVariants(this, defaultLocation);
+            ModelResourceLocation location = new ModelResourceLocation(defaultLocation, "inventory");
+            IBakedModel wrapped = new CosmicItemRenderer(TransformUtils.DEFAULT_ITEM, (modelRegistry) -> modelRegistry.getObject(location));
+            ModelRegistryHelper.register(location, wrapped);
         }
     }
 
