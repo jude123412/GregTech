@@ -22,14 +22,14 @@ public class GuiGhostCircuitSelector extends GuiScreen {
     private static final ResourceLocation GT_BACKGROUND =
             new ResourceLocation("gregtech", "textures/gui/base/ghost_circuit_background.png");
 
-    int guiLeft = (width - 166) / 2 + 385;
-    int guiTop = (height - 120) / 2 + 160;
+    int guiLeft = 0;
+    int guiTop = 0;
 
-    int startX = guiLeft + 6;
-    int startY = guiTop + 44;
+    int startX = 0;
+    int startY = 0;
 
-    int previewX = guiLeft + (166 - 18) / 2 - 1;
-    int previewY = guiTop + 15;
+    int previewX = 0;
+    int previewY = 0;
 
     int currentValue;
 
@@ -41,6 +41,15 @@ public class GuiGhostCircuitSelector extends GuiScreen {
 
     @Override
     public void initGui() {
+        guiLeft = (width - 166) / 2;
+        guiTop = (height - 120) / 2;
+
+        startX = guiLeft + 6;
+        startY = guiTop + 44;
+
+        previewX = guiLeft + (166 - 18) / 2 - 1;
+        previewY = guiTop + 15;
+
         int value = 0;
         int buttonSize = 16;
         int spacing = 1;
@@ -73,11 +82,11 @@ public class GuiGhostCircuitSelector extends GuiScreen {
         // Draw GTCEu-style panel
         drawModalRectWithCustomSizedTexture(
                 guiLeft, guiTop,
-                0, 0,          // UV start
+                0, 0,
                 166,
-                120,      // draw size
-                166,  // full PNG width
-                120  // full PNG height
+                120,
+                166,
+                120
         );
 
         String title = LocalizationUtils.format("metaitem.circuit.integrated.gui");
