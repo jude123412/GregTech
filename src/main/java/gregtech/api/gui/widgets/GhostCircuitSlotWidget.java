@@ -1,6 +1,7 @@
 package gregtech.api.gui.widgets;
 
 import gregtech.api.capability.impl.GhostCircuitItemStackHandler;
+import gregtech.api.gui.GuiGhostCircuitSelector;
 import gregtech.api.recipes.ingredients.IntCircuitIngredient;
 import gregtech.api.util.LocalizationUtils;
 import gregtech.client.utils.TooltipHelper;
@@ -43,7 +44,10 @@ public class GhostCircuitSlotWidget extends SlotWidget {
     public boolean mouseClicked(int mouseX, int mouseY, int button) {
         if (isMouseOverElement(mouseX, mouseY) && gui != null) {
             if (button == 0 && TooltipHelper.isShiftDown()) {
+                int newValue = GuiGhostCircuitSelector.getCurrentValue();
                 openSelectorClientSide();
+                this.circuitInventory.setCircuitValue(newValue);
+                writeClientAction(OPEN_GHOST_GUI, buf -> buf.writeVarInt(newValue));
             } else if (button == 0) {
                 // increment on left-click
                 int newValue = getNextValue(true);

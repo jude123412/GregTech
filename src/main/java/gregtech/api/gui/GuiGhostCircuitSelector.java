@@ -30,12 +30,12 @@ public class GuiGhostCircuitSelector extends GuiScreen {
     int previewX = 0;
     int previewY = 0;
 
-    int currentValue;
+    static int currentValue;
 
     public GuiGhostCircuitSelector(GuiScreen parent, int currentValue, Consumer<Integer> onSelect) {
         this.onSelect = onSelect;
         this.parent = parent;
-        this.currentValue = currentValue;
+        GuiGhostCircuitSelector.currentValue = currentValue;
     }
 
     @Override
@@ -113,7 +113,7 @@ public class GuiGhostCircuitSelector extends GuiScreen {
     @Override
     protected void actionPerformed(GuiButton button) {
         onSelect.accept(button.id);
-        this.currentValue = button.id;
+        currentValue = button.id;
     }
 
     @Override
@@ -129,5 +129,9 @@ public class GuiGhostCircuitSelector extends GuiScreen {
     @Override
     public boolean doesGuiPauseGame() {
         return false;
+    }
+
+    public static int getCurrentValue() {
+        return currentValue;
     }
 }
