@@ -40,13 +40,13 @@ public class GuiGhostCircuitSelector extends GuiScreen {
 
     @Override
     public void initGui() {
-        guiLeft = (width - 166) / 2;
+        guiLeft = (width - 176) / 2;
         guiTop = (height - 120) / 2;
 
-        startX = guiLeft + 6;
+        startX = guiLeft + 11;
         startY = guiTop + 44;
 
-        previewX = guiLeft + (166 - 18) / 2 - 1;
+        previewX = guiLeft + (176 - 18) / 2 - 1;
         previewY = guiTop + 15;
 
         int value = 0;
@@ -81,9 +81,9 @@ public class GuiGhostCircuitSelector extends GuiScreen {
         drawModalRectWithCustomSizedTexture(
                 guiLeft, guiTop,
                 0, 0,
-                166,
+                176,
                 120,
-                166,
+                176,
                 120);
 
         String title = LocalizationUtils.format("metaitem.circuit.integrated.gui");
