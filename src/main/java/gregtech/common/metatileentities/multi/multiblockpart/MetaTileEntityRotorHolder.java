@@ -8,6 +8,7 @@ import gregtech.api.damagesources.DamageSources;
 import gregtech.api.metatileentity.ITieredMetaTileEntity;
 import gregtech.api.metatileentity.MetaTileEntity;
 import gregtech.api.metatileentity.interfaces.IGregTechTileEntity;
+import gregtech.api.metatileentity.multiblock.AbilityInstances;
 import gregtech.api.metatileentity.multiblock.IMultiblockAbilityPart;
 import gregtech.api.metatileentity.multiblock.MultiblockAbility;
 import gregtech.api.mui.GTGuiTextures;
@@ -40,10 +41,11 @@ import codechicken.lib.vec.Matrix4;
 import com.cleanroommc.modularui.api.drawable.IKey;
 import com.cleanroommc.modularui.factory.PosGuiData;
 import com.cleanroommc.modularui.screen.ModularPanel;
+import com.cleanroommc.modularui.screen.UISettings;
 import com.cleanroommc.modularui.value.sync.PanelSyncManager;
 import com.cleanroommc.modularui.value.sync.SyncHandlers;
-import com.cleanroommc.modularui.widgets.ItemSlot;
 import com.cleanroommc.modularui.widgets.SlotGroupWidget;
+import com.cleanroommc.modularui.widgets.slot.ItemSlot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,12 +87,12 @@ public class MetaTileEntityRotorHolder extends MetaTileEntityMultiblockNotifiabl
     }
 
     @Override
-    public ModularPanel buildUI(PosGuiData guiData, PanelSyncManager guiSyncManager) {
+    public ModularPanel buildUI(PosGuiData guiData, PanelSyncManager guiSyncManager, UISettings settings) {
         guiSyncManager.registerSlotGroup("item_inv", 1);
         // TODO: Change the position of the name when it's standardized.
         return GTGuis.createPanel(this, 176, 166)
                 .child(IKey.lang(getMetaFullName()).asWidget().pos(5, 5))
-                .child(SlotGroupWidget.playerInventory().left(7).bottom(7))
+                .child(SlotGroupWidget.playerInventory(false).left(7).bottom(7))
                 .child(new ItemSlot()
                         .slot(SyncHandlers.itemSlot(inventory, 0)
                                 .slotGroup("item_inv")
@@ -165,8 +167,8 @@ public class MetaTileEntityRotorHolder extends MetaTileEntityMultiblockNotifiabl
     }
 
     @Override
-    public void registerAbilities(@NotNull List<IRotorHolder> abilityList) {
-        abilityList.add(this);
+    public void registerAbilities(@NotNull AbilityInstances abilityInstances) {
+        abilityInstances.add(this);
     }
 
     @Override

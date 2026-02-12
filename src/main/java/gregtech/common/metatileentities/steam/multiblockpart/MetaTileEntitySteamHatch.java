@@ -7,6 +7,7 @@ import gregtech.api.capability.impl.FluidTankList;
 import gregtech.api.items.itemhandlers.GTItemStackHandler;
 import gregtech.api.metatileentity.MetaTileEntity;
 import gregtech.api.metatileentity.interfaces.IGregTechTileEntity;
+import gregtech.api.metatileentity.multiblock.AbilityInstances;
 import gregtech.api.metatileentity.multiblock.IMultiblockAbilityPart;
 import gregtech.api.metatileentity.multiblock.MultiblockAbility;
 import gregtech.api.metatileentity.multiblock.MultiblockControllerBase;
@@ -38,13 +39,15 @@ import codechicken.lib.vec.Matrix4;
 import com.cleanroommc.modularui.api.drawable.IKey;
 import com.cleanroommc.modularui.factory.PosGuiData;
 import com.cleanroommc.modularui.screen.ModularPanel;
+import com.cleanroommc.modularui.screen.UISettings;
 import com.cleanroommc.modularui.utils.Alignment;
 import com.cleanroommc.modularui.utils.Color;
 import com.cleanroommc.modularui.value.sync.PanelSyncManager;
 import com.cleanroommc.modularui.value.sync.SyncHandlers;
-import com.cleanroommc.modularui.widgets.ItemSlot;
 import com.cleanroommc.modularui.widgets.RichTextWidget;
 import com.cleanroommc.modularui.widgets.SlotGroupWidget;
+import com.cleanroommc.modularui.widgets.slot.ItemSlot;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -128,8 +131,8 @@ public class MetaTileEntitySteamHatch extends MetaTileEntityMultiblockPart
     }
 
     @Override
-    public void registerAbilities(List<IFluidTank> abilityList) {
-        abilityList.addAll(this.importFluids.getFluidTanks());
+    public void registerAbilities(@NotNull AbilityInstances abilityInstances) {
+        abilityInstances.addAll(this.importFluids.getFluidTanks());
     }
 
     @Override
@@ -138,15 +141,15 @@ public class MetaTileEntitySteamHatch extends MetaTileEntityMultiblockPart
     }
 
     @Override
-    public ModularPanel buildUI(PosGuiData guiData, PanelSyncManager guiSyncManager) {
+    public ModularPanel buildUI(PosGuiData guiData, PanelSyncManager guiSyncManager, UISettings settings) {
         guiSyncManager.registerSlotGroup("item_inv", 2);
 
         GTFluidSyncHandler tankSyncHandler = GTFluidSlot.sync(this.importFluids.getTankAt(0))
-                .showAmount(false);
+                .showAmountOnSlot(false);
 
         return GTGuis.createPanel(this, 176, 166)
                 .child(IKey.lang(getMetaFullName()).asWidget().pos(5, 5))
-                .child(SlotGroupWidget.playerInventory().left(7).bottom(7))
+                .child(SlotGroupWidget.playerInventory(false).left(7).bottom(7))
                 .child((IS_STEEL ? GTGuiTextures.DISPLAY_STEEL : GTGuiTextures.DISPLAY_BRONZE).asWidget()
                         .left(7).top(16)
                         .size(81, 55))

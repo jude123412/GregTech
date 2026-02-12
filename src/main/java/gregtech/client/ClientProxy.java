@@ -12,6 +12,7 @@ import gregtech.api.util.FluidTooltipUtil;
 import gregtech.api.util.GTLog;
 import gregtech.api.util.IBlockOre;
 import gregtech.api.util.Mods;
+import gregtech.api.util.input.KeyBind;
 import gregtech.client.model.customtexture.CustomTextureModelHandler;
 import gregtech.client.model.customtexture.MetadataSectionCTM;
 import gregtech.client.renderer.handler.FacadeRenderer;
@@ -105,6 +106,8 @@ public class ClientProxy extends CommonProxy {
         OpticalPipeRenderer.INSTANCE.preInit();
         LaserPipeRenderer.INSTANCE.preInit();
         MetaEntities.initRenderers();
+
+        MinecraftForge.EVENT_BUS.register(KeyBind.class);
     }
 
     @Override
@@ -130,8 +133,8 @@ public class ClientProxy extends CommonProxy {
     public static void textureStitchPre(@NotNull TextureStitchEvent.Pre event) {
         TextureMap map = event.getMap();
         GTFluidRegistration.INSTANCE.registerSprites(map);
-        PipeRenderer.initializeRestrictor(map);
         Textures.register(map);
+        PipeRenderer.initializeRestrictor(map);
         CableRenderer.INSTANCE.registerIcons(map);
         FluidPipeRenderer.INSTANCE.registerIcons(map);
         ItemPipeRenderer.INSTANCE.registerIcons(map);

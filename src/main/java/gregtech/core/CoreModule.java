@@ -4,9 +4,9 @@ import gregtech.api.GTValues;
 import gregtech.api.GregTechAPI;
 import gregtech.api.GregTechAPIInternal;
 import gregtech.api.block.IHeatingCoilBlockStats;
+import gregtech.api.block.coil.CoilManager;
 import gregtech.api.capability.SimpleCapabilityManager;
 import gregtech.api.cover.CoverDefinition;
-import gregtech.api.cover.CoverUIFactory;
 import gregtech.api.fluids.GTFluidRegistration;
 import gregtech.api.gui.UIFactory;
 import gregtech.api.items.gui.PlayerInventoryUIFactory;
@@ -29,7 +29,6 @@ import gregtech.api.unification.material.event.PostMaterialEvent;
 import gregtech.api.unification.material.registry.MarkerMaterialRegistry;
 import gregtech.api.util.CapesRegistry;
 import gregtech.api.util.Mods;
-import gregtech.api.util.input.KeyBind;
 import gregtech.api.util.oreglob.OreGlob;
 import gregtech.api.util.virtualregistry.VirtualEnderRegistry;
 import gregtech.api.worldgen.bedrockFluids.BedrockFluidVeinHandler;
@@ -45,6 +44,7 @@ import gregtech.common.blocks.MetaBlocks;
 import gregtech.common.command.CommandHand;
 import gregtech.common.command.CommandRecipeCheck;
 import gregtech.common.command.CommandShaders;
+import gregtech.common.command.benchmark.CommandBenchmark;
 import gregtech.common.command.worldgen.CommandWorldgen;
 import gregtech.common.covers.CoverBehaviors;
 import gregtech.common.covers.filter.oreglob.impl.OreGlobParser;
@@ -151,7 +151,6 @@ public class CoreModule implements IGregTechModule {
         logger.info("Registering GTCEu UI Factories");
         MetaTileEntityUIFactory.INSTANCE.init();
         PlayerInventoryUIFactory.INSTANCE.init();
-        CoverUIFactory.INSTANCE.init();
         logger.info("Registering addon UI Factories");
         MinecraftForge.EVENT_BUS.post(new GregTechAPI.RegisterEvent<>(UI_FACTORY_REGISTRY, UIFactory.class));
         UI_FACTORY_REGISTRY.freeze();
@@ -194,12 +193,16 @@ public class CoreModule implements IGregTechModule {
         // need to do this before MetaBlocks runs, to make sure all addons get their own BlockMachine
         /* Start MTE Registry Addition */
         GregTechAPI.mteManager = MTEManager.getInstance();
+        GregTechAPI.coilManager = CoilManager.getInstance();
         MinecraftForge.EVENT_BUS.post(new MTEManager.MTERegistryEvent());
         /* End MTE Registry Addition */
 
         OreDictUnifier.init();
 
         MetaBlocks.init();
+        logger.info("Registering Coils");
+        MinecraftForge.EVENT_BUS.post(new CoilManager.CoilRegistryEvent());
+
         MetaItems.init();
         ToolItems.init();
         GTFluidRegistration.INSTANCE.register();
@@ -216,7 +219,7 @@ public class CoreModule implements IGregTechModule {
         MetaEntities.init();
 
         /* Start API Block Registration */
-        for (BlockWireCoil.CoilType type : BlockWireCoil.CoilType.values()) {
+        for (BlockWireCoil.CoilType type : BlockWireCoil.getCoilTypes()) {
             HEATING_COILS.put(MetaBlocks.WIRE_COIL.getState(type), type);
         }
         for (BlockBatteryPart.BatteryPartType type : BlockBatteryPart.BatteryPartType.values()) {
@@ -228,7 +231,6 @@ public class CoreModule implements IGregTechModule {
         /* End API Block Registration */
 
         proxy.onPreLoad();
-        KeyBind.init();
     }
 
     @Override
@@ -323,6 +325,7 @@ public class CoreModule implements IGregTechModule {
         GregTechAPI.commandManager.addCommand(new CommandRecipeCheck());
         GregTechAPI.commandManager.addCommand(new CommandShaders());
         GregTechAPI.commandManager.addCommand(new CommandDataFix());
+        GregTechAPI.commandManager.addCommand(new CommandBenchmark());
         CapesRegistry.load();
 
         if (Mods.BetterQuestingUnofficial.isModLoaded()) {

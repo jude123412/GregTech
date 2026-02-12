@@ -5,6 +5,7 @@ import codechicken.lib.texture.TextureUtils;
 import codechicken.lib.util.TransformUtils;
 
 import gregtech.api.GTValues;
+import gregtech.api.GregTechAPI;
 import gregtech.api.capability.GregtechCapabilities;
 import gregtech.api.capability.IElectricItem;
 import gregtech.api.capability.IFilteredFluidContainer;
@@ -15,23 +16,11 @@ import gregtech.api.gui.ModularUI;
 import gregtech.api.items.OreDictNames;
 import gregtech.api.items.gui.ItemUIFactory;
 import gregtech.api.items.gui.PlayerInventoryHolder;
-import gregtech.api.items.metaitem.stats.IEnchantabilityHelper;
-import gregtech.api.items.metaitem.stats.IFoodBehavior;
-import gregtech.api.items.metaitem.stats.IItemBehaviour;
-import gregtech.api.items.metaitem.stats.IItemCapabilityProvider;
-import gregtech.api.items.metaitem.stats.IItemColorProvider;
-import gregtech.api.items.metaitem.stats.IItemComponent;
-import gregtech.api.items.metaitem.stats.IItemContainerItemProvider;
-import gregtech.api.items.metaitem.stats.IItemDurabilityManager;
-import gregtech.api.items.metaitem.stats.IItemMaxStackSizeProvider;
-import gregtech.api.items.metaitem.stats.IItemNameProvider;
-import gregtech.api.items.metaitem.stats.IItemUseManager;
-import gregtech.api.items.metaitem.stats.ISubItemHandler;
-import gregtech.api.recipes.ingredients.IntCircuitIngredient;
+import gregtech.api.items.metaitem.stats.*;
 import gregtech.api.unification.OreDictUnifier;
 import gregtech.api.unification.material.Material;
 import gregtech.api.unification.ore.OrePrefix;
-import gregtech.api.unification.stack.ItemMaterialInfo;
+import gregtech.api.unification.stack.RecyclingData;
 import gregtech.api.util.GTUtility;
 import gregtech.api.util.LocalizationUtils;
 import gregtech.api.util.Mods;
@@ -221,18 +210,17 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
 
     protected int getModelIndex(ItemStack itemStack) {
         T metaValueItem = getItem(itemStack);
+        Objects.requireNonNull(metaValueItem);
 
-        // Electric Items
-        IElectricItem electricItem = itemStack.getCapability(GregtechCapabilities.CAPABILITY_ELECTRIC_ITEM, null);
-        if (electricItem != null) {
-            return (int) Math.min(((electricItem.getCharge() / (electricItem.getMaxCharge() * 1.0)) * 7), 7);
-        }
+        var modelDispatcher = metaValueItem.getItemModelDispatcher();
+        if (modelDispatcher == null) return 0;
 
-        // Integrated (Config) Circuit
-        if (metaValueItem != null) {
-            return IntCircuitIngredient.getCircuitConfiguration(itemStack);
-        }
-        return 0;
+        int maxIndex = metaValueItem.getModelAmount() - 1;
+        int index = modelDispatcher.getModelIndex(itemStack, maxIndex);
+        Validate.inclusiveBetween(0, maxIndex, index,
+                "Model index should be in range from 0 to %d (inclusive), where %d is supplied", maxIndex, index);
+
+        return index;
     }
 
     @SideOnly(Side.CLIENT)
@@ -872,6 +860,7 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
         private IItemColorProvider colorProvider;
         private IItemDurabilityManager durabilityManager;
         private IEnchantabilityHelper enchantabilityHelper;
+        private IItemModelDispatcher itemModelDispatcher;
         private EnumRarity rarity;
 
         private int burnValue = 0;
@@ -894,11 +883,11 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
             this.unlocalizedName = unlocalizedName;
         }
 
-        public MetaValueItem setMaterialInfo(ItemMaterialInfo materialInfo) {
-            if (materialInfo == null) {
-                throw new IllegalArgumentException("Cannot add null ItemMaterialInfo.");
+        public MetaValueItem setRecyclingData(RecyclingData data) {
+            if (data == null) {
+                throw new IllegalArgumentException("Cannot add null RecyclingData.");
             }
-            OreDictUnifier.registerOre(getStackForm(), materialInfo);
+            GregTechAPI.RECYCLING_MANAGER.registerRecyclingData(getStackForm(), data);
             return this;
         }
 
@@ -1066,6 +1055,9 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
                 if (itemComponent instanceof IEnchantabilityHelper) {
                     this.enchantabilityHelper = (IEnchantabilityHelper) itemComponent;
                 }
+                if (itemComponent instanceof IItemModelDispatcher iItemModelDispatcher) {
+                    this.itemModelDispatcher = iItemModelDispatcher;
+                }
                 this.allStats.add(itemComponent);
             }
         }
@@ -1124,6 +1116,11 @@ public abstract class MetaItem<T extends MetaItem<?>.MetaValueItem> extends Item
         @Nullable
         public IEnchantabilityHelper getEnchantabilityHelper() {
             return enchantabilityHelper;
+        }
+
+        @Nullable
+        public IItemModelDispatcher getItemModelDispatcher() {
+            return itemModelDispatcher;
         }
 
         public int getBurnValue() {

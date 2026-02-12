@@ -46,6 +46,9 @@ public class GregtechDataCodes {
     // Misc TEs (Transformer, World Accelerator)
     public static final int SYNC_TILE_MODE = assignId();
 
+    // Crafting Station
+    public static final int UPDATE_CLIENT_HANDLER = assignId();
+
     // Clipboard
     public static final int CREATE_FAKE_UI = assignId();
     public static final int MOUSE_POSITION = assignId();
@@ -96,6 +99,7 @@ public class GregtechDataCodes {
     public static final int UPDATE_UPWARDS_FACING = assignId();
     public static final int UPDATE_FLIP = assignId();
     public static final int LOCK_FILL = assignId();
+    public static final int MUFFLER_OBSTRUCTED = assignId();
 
     // Item Bus Item Stack Auto Collapsing
     public static final int TOGGLE_COLLAPSE_ITEMS = assignId();

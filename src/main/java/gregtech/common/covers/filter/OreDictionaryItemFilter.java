@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public class OreDictionaryItemFilter extends BaseFilter {
 
@@ -71,11 +70,8 @@ public class OreDictionaryItemFilter extends BaseFilter {
     }
 
     @Override
-    public void initUI(Consumer<gregtech.api.gui.Widget> widgetGroup) {}
-
-    @Override
-    public @NotNull ModularPanel createPopupPanel(PanelSyncManager syncManager) {
-        return GTGuis.createPopupPanel("ore_dict_filter", 188, 76, false)
+    public @NotNull ModularPanel createPopupPanel(PanelSyncManager syncManager, String panelName) {
+        return GTGuis.createPopupPanel(panelName, 188, 76, false)
                 .padding(7)
                 .child(CoverWithUI.createTitleRow(getContainerStack()))
                 .child(createWidgets(syncManager).top(22));
@@ -231,22 +227,6 @@ public class OreDictionaryItemFilter extends BaseFilter {
                 case '\\' -> {
                     builder.insert(i++, TextFormatting.YELLOW);
                     i += 2;
-                }
-                case '$' -> { // TODO: remove this switch case in 2.9
-                    builder.insert(i, TextFormatting.DARK_GREEN);
-                    for (; i < builder.length(); i++) {
-                        switch (builder.charAt(i)) {
-                            case ' ', '\t', '\n', '\r' -> {}
-                            case '\\' -> {
-                                i++;
-                                continue;
-                            }
-                            default -> {
-                                continue;
-                            }
-                        }
-                        break;
-                    }
                 }
                 default -> {
                     continue;

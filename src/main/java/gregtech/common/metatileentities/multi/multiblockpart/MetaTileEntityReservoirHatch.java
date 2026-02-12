@@ -1,22 +1,28 @@
 package gregtech.common.metatileentities.multi.multiblockpart;
 
 import gregtech.api.GTValues;
+import gregtech.api.capability.IGhostSlotConfigurable;
 import gregtech.api.capability.impl.FilteredItemHandler;
 import gregtech.api.capability.impl.FluidTankList;
+import gregtech.api.capability.impl.GhostCircuitItemStackHandler;
 import gregtech.api.capability.impl.NotifiableFluidTank;
 import gregtech.api.metatileentity.MetaTileEntity;
 import gregtech.api.metatileentity.interfaces.IGregTechTileEntity;
+import gregtech.api.metatileentity.multiblock.AbilityInstances;
 import gregtech.api.metatileentity.multiblock.IMultiblockAbilityPart;
 import gregtech.api.metatileentity.multiblock.MultiblockAbility;
+import gregtech.api.metatileentity.multiblock.MultiblockControllerBase;
 import gregtech.api.mui.GTGuiTextures;
 import gregtech.api.mui.GTGuis;
 import gregtech.api.mui.sync.GTFluidSyncHandler;
+import gregtech.api.mui.widget.GhostCircuitSlotWidget;
 import gregtech.client.renderer.texture.Textures;
 import gregtech.common.mui.widget.GTFluidSlot;
 
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -36,23 +42,27 @@ import codechicken.lib.vec.Matrix4;
 import com.cleanroommc.modularui.api.drawable.IKey;
 import com.cleanroommc.modularui.factory.PosGuiData;
 import com.cleanroommc.modularui.screen.ModularPanel;
+import com.cleanroommc.modularui.screen.UISettings;
 import com.cleanroommc.modularui.utils.Alignment;
 import com.cleanroommc.modularui.utils.Color;
 import com.cleanroommc.modularui.value.sync.PanelSyncManager;
 import com.cleanroommc.modularui.value.sync.SyncHandlers;
-import com.cleanroommc.modularui.widgets.ItemSlot;
 import com.cleanroommc.modularui.widgets.RichTextWidget;
 import com.cleanroommc.modularui.widgets.SlotGroupWidget;
+import com.cleanroommc.modularui.widgets.slot.ItemSlot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class MetaTileEntityReservoirHatch extends MetaTileEntityMultiblockNotifiablePart
-                                          implements IMultiblockAbilityPart<IFluidTank> {
+                                          implements IMultiblockAbilityPart<IFluidTank>,
+                                          IGhostSlotConfigurable {
 
     private static final int FLUID_AMOUNT = 2_000_000_000;
     private final InfiniteWaterTank fluidTank;
+    private GhostCircuitItemStackHandler circuitInventory;
 
     public MetaTileEntityReservoirHatch(ResourceLocation metaTileEntityId) {
         super(metaTileEntityId, GTValues.EV, false);
@@ -63,6 +73,13 @@ public class MetaTileEntityReservoirHatch extends MetaTileEntityMultiblockNotifi
     @Override
     public MetaTileEntity createMetaTileEntity(IGregTechTileEntity tileEntity) {
         return new MetaTileEntityReservoirHatch(metaTileEntityId);
+    }
+
+    @Override
+    protected void initializeInventory() {
+        super.initializeInventory();
+        this.circuitInventory = new GhostCircuitItemStackHandler(this);
+        this.circuitInventory.addNotifiableMetaTileEntity(this);
     }
 
     @Override
@@ -114,13 +131,17 @@ public class MetaTileEntityReservoirHatch extends MetaTileEntityMultiblockNotifi
     }
 
     @Override
-    public MultiblockAbility<IFluidTank> getAbility() {
-        return MultiblockAbility.IMPORT_FLUIDS;
+    public @NotNull List<MultiblockAbility<?>> getAbilities() {
+        return Arrays.asList(MultiblockAbility.IMPORT_FLUIDS, MultiblockAbility.IMPORT_ITEMS);
     }
 
     @Override
-    public void registerAbilities(List<IFluidTank> abilityList) {
-        abilityList.add(fluidTank);
+    public void registerAbilities(@NotNull AbilityInstances abilityInstances) {
+        if (abilityInstances.isKey(MultiblockAbility.IMPORT_FLUIDS))
+            abilityInstances.add(fluidTank);
+        else if (abilityInstances.isKey(MultiblockAbility.IMPORT_ITEMS)) {
+            abilityInstances.add(circuitInventory);
+        }
     }
 
     @Override
@@ -129,17 +150,17 @@ public class MetaTileEntityReservoirHatch extends MetaTileEntityMultiblockNotifi
     }
 
     @Override
-    public ModularPanel buildUI(PosGuiData guiData, PanelSyncManager guiSyncManager) {
+    public ModularPanel buildUI(PosGuiData guiData, PanelSyncManager guiSyncManager, UISettings settings) {
         guiSyncManager.registerSlotGroup("item_inv", 2);
 
         GTFluidSyncHandler tankSyncHandler = GTFluidSlot.sync(this.fluidTank)
-                .showAmount(false)
+                .showAmountOnSlot(false)
                 .accessibility(true, false);
 
         // TODO: Change the position of the name when it's standardized.
         return GTGuis.createPanel(this, 176, 166)
                 .child(IKey.lang(getMetaFullName()).asWidget().pos(5, 5))
-                .child(SlotGroupWidget.playerInventory().left(7).bottom(7))
+                .child(SlotGroupWidget.playerInventory(false).left(7).bottom(7))
                 .child(GTGuiTextures.DISPLAY.asWidget()
                         .left(7).top(16)
                         .size(81, 55))
@@ -172,7 +193,11 @@ public class MetaTileEntityReservoirHatch extends MetaTileEntityMultiblockNotifi
                         .slotGroup("item_inv")
                         .accessibility(false, true))
                         .background(GTGuiTextures.SLOT, GTGuiTextures.OUT_SLOT_OVERLAY)
-                        .pos(90, 53));
+                        .pos(90, 53))
+                .child(new GhostCircuitSlotWidget()
+                        .slot(circuitInventory, 0)
+                        .background(GTGuiTextures.SLOT, GTGuiTextures.INT_CIRCUIT_OVERLAY)
+                        .pos(124, 62));
     }
 
     @Override
@@ -186,6 +211,58 @@ public class MetaTileEntityReservoirHatch extends MetaTileEntityMultiblockNotifi
     public void addToolUsages(ItemStack stack, @Nullable World world, List<String> tooltip, boolean advanced) {
         tooltip.add(I18n.format("gregtech.tool_action.screwdriver.access_covers"));
         super.addToolUsages(stack, world, tooltip, advanced);
+    }
+
+    @Override
+    public boolean hasGhostCircuitInventory() {
+        return true;
+    }
+
+    @Override
+    public void setGhostCircuitConfig(int config) {
+        if (this.circuitInventory.getCircuitValue() == config) {
+            return;
+        }
+        this.circuitInventory.setCircuitValue(config);
+        if (!getWorld().isRemote) {
+            markDirty();
+        }
+    }
+
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound data) {
+        this.circuitInventory.write(data);
+        return super.writeToNBT(data);
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound data) {
+        this.circuitInventory.read(data);
+        super.readFromNBT(data);
+    }
+
+    @Override
+    public void writeInitialSyncData(PacketBuffer buf) {
+        super.writeInitialSyncData(buf);
+        buf.writeVarInt(this.circuitInventory.getCircuitValue());
+    }
+
+    @Override
+    public void receiveInitialSyncData(PacketBuffer buf) {
+        super.receiveInitialSyncData(buf);
+        setGhostCircuitConfig(buf.readVarInt());
+    }
+
+    @Override
+    public void addToMultiBlock(MultiblockControllerBase controllerBase) {
+        super.addToMultiBlock(controllerBase);
+        this.circuitInventory.addNotifiableMetaTileEntity(controllerBase);
+    }
+
+    @Override
+    public void removeFromMultiBlock(MultiblockControllerBase controllerBase) {
+        super.removeFromMultiBlock(controllerBase);
+        this.circuitInventory.removeNotifiableMetaTileEntity(controllerBase);
     }
 
     private static class InfiniteWaterTank extends NotifiableFluidTank {
