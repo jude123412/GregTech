@@ -1,7 +1,6 @@
 package gregtech.api.gui;
 
 import gregtech.api.recipes.ingredients.IntCircuitIngredient;
-
 import gregtech.api.util.LocalizationUtils;
 
 import net.minecraft.client.gui.GuiButton;
@@ -19,8 +18,8 @@ public class GuiGhostCircuitSelector extends GuiScreen {
 
     private final Consumer<Integer> onSelect;
 
-    private static final ResourceLocation GT_BACKGROUND =
-            new ResourceLocation("gregtech", "textures/gui/base/ghost_circuit_background.png");
+    private static final ResourceLocation GT_BACKGROUND = new ResourceLocation("gregtech",
+            "textures/gui/base/ghost_circuit_background.png");
 
     int guiLeft = 0;
     int guiTop = 0;
@@ -64,8 +63,7 @@ public class GuiGhostCircuitSelector extends GuiScreen {
                         startX + col * (buttonSize + spacing),
                         startY + row * (buttonSize + spacing),
 
-                        circuit
-                ));
+                        circuit));
 
                 value++;
                 if (value >= 33) break;
@@ -86,8 +84,7 @@ public class GuiGhostCircuitSelector extends GuiScreen {
                 166,
                 120,
                 166,
-                120
-        );
+                120);
 
         String title = LocalizationUtils.format("metaitem.circuit.integrated.gui");
         fontRenderer.drawString(title, guiLeft + 5, guiTop + 5, 0x404040);

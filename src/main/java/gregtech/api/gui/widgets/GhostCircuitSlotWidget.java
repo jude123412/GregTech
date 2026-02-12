@@ -44,11 +44,11 @@ public class GhostCircuitSlotWidget extends SlotWidget {
         if (isMouseOverElement(mouseX, mouseY) && gui != null) {
             if (button == 0 && TooltipHelper.isShiftDown()) {
                 Minecraft.getMinecraft().displayGuiScreen(
-                        new GuiGhostCircuitSelector(gui.getModularUIGui(), this.circuitInventory.getCircuitValue(), value -> {
-                            this.circuitInventory.setCircuitValue(value);
-                            writeClientAction(SET_TO_N, buf -> buf.writeVarInt(value));
-                        })
-                );
+                        new GuiGhostCircuitSelector(gui.getModularUIGui(), this.circuitInventory.getCircuitValue(),
+                                value -> {
+                                    this.circuitInventory.setCircuitValue(value);
+                                    writeClientAction(SET_TO_N, buf -> buf.writeVarInt(value));
+                                }));
             } else if (button == 0) {
                 // increment on left-click
                 int newValue = getNextValue(true);
