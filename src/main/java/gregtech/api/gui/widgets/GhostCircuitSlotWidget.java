@@ -1,10 +1,12 @@
 package gregtech.api.gui.widgets;
 
 import gregtech.api.capability.impl.GhostCircuitItemStackHandler;
+import gregtech.api.gui.GuiGhostCircuitSelector;
 import gregtech.api.recipes.ingredients.IntCircuitIngredient;
 import gregtech.api.util.LocalizationUtils;
 import gregtech.client.utils.TooltipHelper;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 
@@ -41,8 +43,12 @@ public class GhostCircuitSlotWidget extends SlotWidget {
     public boolean mouseClicked(int mouseX, int mouseY, int button) {
         if (isMouseOverElement(mouseX, mouseY) && gui != null) {
             if (button == 0 && TooltipHelper.isShiftDown()) {
-                // open popup on shift-left-click
-                // todo add this one day
+                Minecraft.getMinecraft().displayGuiScreen(
+                        new GuiGhostCircuitSelector(gui.getModularUIGui(), this.circuitInventory.getCircuitValue(), value -> {
+                            this.circuitInventory.setCircuitValue(value);
+                            writeClientAction(SET_TO_N, buf -> buf.writeVarInt(value));
+                        })
+                );
             } else if (button == 0) {
                 // increment on left-click
                 int newValue = getNextValue(true);
