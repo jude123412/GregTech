@@ -1,17 +1,16 @@
 package gregtech.api.gui.widgets;
 
 import gregtech.api.capability.impl.GhostCircuitItemStackHandler;
-import gregtech.api.gui.GuiGhostCircuitSelector;
 import gregtech.api.recipes.ingredients.IntCircuitIngredient;
 import gregtech.api.util.LocalizationUtils;
 import gregtech.client.utils.TooltipHelper;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Used for setting a "ghost" IC for a machine
@@ -21,6 +20,7 @@ public class GhostCircuitSlotWidget extends SlotWidget {
     private static final int SET_TO_ZERO = 1;
     private static final int SET_TO_EMPTY = 2;
     private static final int SET_TO_N = 3;
+    private static final int OPEN_GHOST_GUI = 4;
 
     private final GhostCircuitItemStackHandler circuitInventory;
 
@@ -43,18 +43,12 @@ public class GhostCircuitSlotWidget extends SlotWidget {
     public boolean mouseClicked(int mouseX, int mouseY, int button) {
         if (isMouseOverElement(mouseX, mouseY) && gui != null) {
             if (button == 0 && TooltipHelper.isShiftDown()) {
-                Minecraft.getMinecraft().displayGuiScreen(
-                        new GuiGhostCircuitSelector(gui.getModularUIGui(), this.circuitInventory.getCircuitValue(),
-                                value -> {
-                                    this.circuitInventory.setCircuitValue(value);
-                                    writeClientAction(SET_TO_N, buf -> buf.writeVarInt(value));
-                                }));
+                openSelectorClientSide();
             } else if (button == 0) {
                 // increment on left-click
                 int newValue = getNextValue(true);
                 this.circuitInventory.setCircuitValue(newValue);
                 writeClientAction(SET_TO_N, buf -> buf.writeVarInt(newValue));
-
             } else if (button == 1 && TooltipHelper.isShiftDown()) {
                 // clear on shift-right-click
                 this.circuitInventory.setCircuitValue(GhostCircuitItemStackHandler.NO_CONFIG);
@@ -130,6 +124,29 @@ public class GhostCircuitSlotWidget extends SlotWidget {
                 return;
             case SET_TO_N:
                 this.circuitInventory.setCircuitValue(buffer.readVarInt());
+            case OPEN_GHOST_GUI:
+                this.circuitInventory.setCircuitValue(buffer.readVarInt());
+        }
+    }
+
+    private void openSelectorClientSide() {
+        try {
+            Class<?> clazz = Class.forName("gregtech.api.gui.widgets.GuiClientHelper");
+            clazz.getMethod(
+                    "openGhostCircuitSelector",
+                    gregtech.api.gui.impl.ModularUIGui.class,
+                    int.class,
+                    Consumer.class).invoke(
+                            null,
+                            gui.getModularUIGui(),
+                            this.circuitInventory.getCircuitValue(),
+                            (java.util.function.Consumer<Integer>) value -> {
+                                this.circuitInventory.setCircuitValue(value);
+                                writeClientAction(OPEN_GHOST_GUI, buf -> buf.writeVarInt(value));
+                            });
+
+        } catch (Exception ignored) {
+
         }
     }
 }
