@@ -13,8 +13,9 @@ public class GuiClientHelper {
 
     public static void openGhostCircuitSelector(
                                                 gregtech.api.gui.impl.ModularUIGui gui,
+                                                int currentValue,
                                                 Consumer<Integer> callback) {
         Minecraft.getMinecraft().displayGuiScreen(
-                new GuiGhostCircuitSelector(gui, callback));
+                new GuiGhostCircuitSelector(gui, currentValue, callback));
     }
 }

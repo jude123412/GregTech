@@ -30,11 +30,13 @@ public class GuiGhostCircuitSelector extends GuiScreen {
     int previewX = 0;
     int previewY = 0;
 
-    static int selectedValue;
+    int currentValue;
+    static int selectedValue = -1;
 
-    public GuiGhostCircuitSelector(GuiScreen parent, Consumer<Integer> onSelect) {
+    public GuiGhostCircuitSelector(GuiScreen parent, int value, Consumer<Integer> onSelect) {
         this.onSelect = onSelect;
         this.parent = parent;
+        currentValue = value;
     }
 
     @Override
@@ -88,14 +90,19 @@ public class GuiGhostCircuitSelector extends GuiScreen {
         String title = LocalizationUtils.format("metaitem.circuit.integrated.gui");
         fontRenderer.drawString(title, guiLeft + 5, guiTop + 5, 0x404040);
 
-        if (selectedValue != -1) {
-            ItemStack current = IntCircuitIngredient.getIntegratedCircuit(selectedValue);
-            RenderHelper.enableGUIStandardItemLighting();
-            mc.getRenderItem().renderItemAndEffectIntoGUI(current, previewX + 1, previewY + 1);
-            RenderHelper.disableStandardItemLighting();
-        }
+        renderCircuitIfValid(currentValue, previewX, previewY);
+        renderCircuitIfValid(selectedValue, previewX, previewY);
 
         super.drawScreen(mouseX, mouseY, partialTicks);
+    }
+
+    private void renderCircuitIfValid(int value, int x, int y) {
+        if (value == -1) return;
+
+        ItemStack stack = IntCircuitIngredient.getIntegratedCircuit(value);
+        RenderHelper.enableGUIStandardItemLighting();
+        mc.getRenderItem().renderItemAndEffectIntoGUI(stack, x + 1, y + 1);
+        RenderHelper.disableStandardItemLighting();
     }
 
     @Override
@@ -123,6 +130,8 @@ public class GuiGhostCircuitSelector extends GuiScreen {
         if (parent != null && mc.currentScreen == null) {
             mc.displayGuiScreen(parent);
         }
+
+        if (selectedValue != -1) selectedValue = -1;
     }
 
     @Override

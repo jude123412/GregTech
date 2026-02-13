@@ -136,9 +136,11 @@ public class GhostCircuitSlotWidget extends SlotWidget {
             clazz.getMethod(
                     "openGhostCircuitSelector",
                     gregtech.api.gui.impl.ModularUIGui.class,
+                    int.class,
                     Consumer.class).invoke(
                             null,
                             gui.getModularUIGui(),
+                            this.circuitInventory.getCircuitValue(),
                             (java.util.function.Consumer<Integer>) value -> {
                                 this.circuitInventory.setCircuitValue(value);
                                 writeClientAction(SET_TO_N, buf -> buf.writeVarInt(value));
