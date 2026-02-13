@@ -30,12 +30,11 @@ public class GuiGhostCircuitSelector extends GuiScreen {
     int previewX = 0;
     int previewY = 0;
 
-    static int currentValue;
+    static int selectedValue;
 
-    public GuiGhostCircuitSelector(GuiScreen parent, int currentValue, Consumer<Integer> onSelect) {
+    public GuiGhostCircuitSelector(GuiScreen parent, Consumer<Integer> onSelect) {
         this.onSelect = onSelect;
         this.parent = parent;
-        GuiGhostCircuitSelector.currentValue = currentValue;
     }
 
     @Override
@@ -89,8 +88,8 @@ public class GuiGhostCircuitSelector extends GuiScreen {
         String title = LocalizationUtils.format("metaitem.circuit.integrated.gui");
         fontRenderer.drawString(title, guiLeft + 5, guiTop + 5, 0x404040);
 
-        if (currentValue != -1) {
-            ItemStack current = IntCircuitIngredient.getIntegratedCircuit(currentValue);
+        if (selectedValue != -1) {
+            ItemStack current = IntCircuitIngredient.getIntegratedCircuit(selectedValue);
             RenderHelper.enableGUIStandardItemLighting();
             mc.getRenderItem().renderItemAndEffectIntoGUI(current, previewX + 1, previewY + 1);
             RenderHelper.disableStandardItemLighting();
@@ -113,7 +112,7 @@ public class GuiGhostCircuitSelector extends GuiScreen {
     @Override
     protected void actionPerformed(GuiButton button) {
         onSelect.accept(button.id);
-        currentValue = button.id;
+        selectedValue = button.id;
     }
 
     @Override
@@ -131,7 +130,7 @@ public class GuiGhostCircuitSelector extends GuiScreen {
         return false;
     }
 
-    public static int getCurrentValue() {
-        return currentValue;
+    public static int getSelectedValue() {
+        return selectedValue;
     }
 }

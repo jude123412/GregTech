@@ -21,7 +21,6 @@ public class GhostCircuitSlotWidget extends SlotWidget {
     private static final int SET_TO_ZERO = 1;
     private static final int SET_TO_EMPTY = 2;
     private static final int SET_TO_N = 3;
-    private static final int OPEN_GHOST_GUI = 4;
 
     private final GhostCircuitItemStackHandler circuitInventory;
 
@@ -44,10 +43,10 @@ public class GhostCircuitSlotWidget extends SlotWidget {
     public boolean mouseClicked(int mouseX, int mouseY, int button) {
         if (isMouseOverElement(mouseX, mouseY) && gui != null) {
             if (button == 0 && TooltipHelper.isShiftDown()) {
-                int newValue = GuiGhostCircuitSelector.getCurrentValue();
+                int newValue = GuiGhostCircuitSelector.getSelectedValue();
                 openSelectorClientSide();
                 this.circuitInventory.setCircuitValue(newValue);
-                writeClientAction(OPEN_GHOST_GUI, buf -> buf.writeVarInt(newValue));
+                writeClientAction(SET_TO_N, buf -> buf.writeVarInt(newValue));
             } else if (button == 0) {
                 // increment on left-click
                 int newValue = getNextValue(true);
@@ -128,8 +127,6 @@ public class GhostCircuitSlotWidget extends SlotWidget {
                 return;
             case SET_TO_N:
                 this.circuitInventory.setCircuitValue(buffer.readVarInt());
-            case OPEN_GHOST_GUI:
-                this.circuitInventory.setCircuitValue(buffer.readVarInt());
         }
     }
 
@@ -139,14 +136,12 @@ public class GhostCircuitSlotWidget extends SlotWidget {
             clazz.getMethod(
                     "openGhostCircuitSelector",
                     gregtech.api.gui.impl.ModularUIGui.class,
-                    int.class,
                     Consumer.class).invoke(
                             null,
                             gui.getModularUIGui(),
-                            this.circuitInventory.getCircuitValue(),
                             (java.util.function.Consumer<Integer>) value -> {
                                 this.circuitInventory.setCircuitValue(value);
-                                writeClientAction(OPEN_GHOST_GUI, buf -> buf.writeVarInt(value));
+                                writeClientAction(SET_TO_N, buf -> buf.writeVarInt(value));
                             });
 
         } catch (Exception ignored) {
